@@ -1,94 +1,123 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour // Create class Shape with props for inheritance
+public class PlayerController : MonoBehaviour
 {
-    public float playerSpeed = 5f;
+    /* Player */
+    private CharacterController controller;
 
-    // Start is called before the first frame update
-    void Start()
+    /* Movement */
+    private float horizontalMovement, verticalMovement;
+    public float playerSpeed = 12f;
+    public float jumpHeight = 3f;
+
+    /* Gravity */
+    public float gravity = -9.81f;
+    public float groundDistance = 0.4f;
+    public Transform groundCheck;
+    public LayerMask groundMask;
+    Vector3 velocity;
+    bool isGrounded;
+
+    /* Freezable */
+    private Collider[] freezables;
+    public LayerMask freezeMask;
+    public float freezeRange = 50f;
+
+    private void Start()
     {
-        
+        controller = GetComponent<CharacterController>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        GroundCheck();
+
+        horizontalMovement = Input.GetAxis("Horizontal");
+        verticalMovement = Input.GetAxis("Vertical");
+
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            Debug.Log(jumpHeight * 2f * gravity);
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        }
+
         MovePlayer();
+        Gravity();
+
+        if (Input.GetKeyDown("e"))
+        {
+            Transform box = ReturnCloser();
+            Renderer render = box.GetComponent<Renderer>();
+            render.material.color = Color.black;
+        }
     }
 
-    void MovePlayer()
+    private Transform ReturnCloser()
     {
-        float horizontalMovement = Input.GetAxis("Horizontal");
-        float verticalMovement = Input.GetAxis("Vertical");
+        freezables = Physics.OverlapSphere(transform.position, freezeRange, freezeMask);
 
-        // Horizontal
-        if (Mathf.Abs(horizontalMovement) > Mathf.Epsilon)
+        Transform tMin = null;
+
+        float minDist = Mathf.Infinity;
+        // Vector3 currentPos = transform.position;
+
+        foreach (Collider freezable in freezables)
         {
-            horizontalMovement = horizontalMovement * Time.deltaTime * playerSpeed;
-            horizontalMovement += transform.position.x;
+            Renderer render = freezable.GetComponent<Renderer>();
 
-            transform.position = new Vector3(horizontalMovement, transform.position.y, transform.position.z);
+            float dist = Vector3.Distance(transform.position, render.transform.position);
+            if (dist < minDist)
+            {
+                tMin = render.transform;
+                minDist = dist;
+            }
         }
 
-        // Depth
-        if (Mathf.Abs(verticalMovement) > Mathf.Epsilon)
-        {
-            verticalMovement = verticalMovement * Time.deltaTime * playerSpeed;
-            verticalMovement += transform.position.z;
+        return tMin;
+    }
 
-            transform.position = new Vector3(transform.position.x, transform.position.y, verticalMovement);
+    /**
+    Transform GetClosestEnemy(Transform[] enemies)
+    {
+        Transform tMin = null;
+        float minDist = Mathf.Infinity;
+        Vector3 currentPos = transform.position;
+        foreach (Transform t in enemies)
+        {
+            float dist = Vector3.Distance(t.position, currentPos);
+            if (dist < minDist)
+            {
+                tMin = t;
+                minDist = dist;
+            }
         }
+        return tMin;
+    }
+    */
+
+    private void GroundCheck()
+    {
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+        if (isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f;
+        }
+    }
+
+    private void Gravity()
+    {
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+    }
+
+    private void MovePlayer()
+    {
+        Vector3 move = transform.right * horizontalMovement + transform.forward * verticalMovement;
+
+        controller.Move(move * playerSpeed * Time.deltaTime);
     }
 }
-
-/*
- * 
- * using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using UnityEngine;
-
-    public class PlayerController : MonoBehaviour
-    {
-        // Controller por velocidade e força
-        [SerializeField] float velMovimento = 5;
-        float inputVertical;
-        float inputHorizontal;
-    
-        // Character Controller
-        private CharacterController controller;
-        private float verticalVelocity;
-        [SerializeField] float gravity;
-        private float jumpForce = 10.0f;
-
-        void Start()
-        {
-            controller = GetComponent<CharacterController>();
-
-            inputVertical = Input.GetAxis("Vertical");
-            inputHorizontal = Input.GetAxis("Horizontal");
-        }
-
-        void Update()
-        {
-            Vector3 moveVector = new Vector3(0, verticalVelocity, 0) * 5.0f;
-            moveVector.x = Input.GetAxis("Horizontal") * 4.0f;
-            moveVector.y = verticalVelocity;
-            moveVector.z = Input.GetAxis("Vertical") * 4.0f;
-            controller.Move(moveVector * Time.deltaTime);
-        }
-
-        public void SavePlayer()
-        {
-            SaveSystem.SavePlayer(this);
-        }
-
-        public void LoadPlayer()
-        {
-            PlayerData data = SaveSystem.LoadPlayer();
-            // controller.transform.position.x = data.position[0];
-        }
-    }
- */
