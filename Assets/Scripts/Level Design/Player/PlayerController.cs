@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     private float horizontalMovement, verticalMovement;
     public float playerSpeed = 12f;
     public float jumpHeight = 3f;
+    bool doubleJump = false;
 
     /* Gravity */
     public float gravity = -9.81f;
@@ -25,6 +26,7 @@ public class PlayerController : MonoBehaviour
     private Collider[] freezables;
     public LayerMask freezeMask;
     public float freezeRange = 50f;
+    bool powerUsed = false;
 
     private void Start()
     {
@@ -39,20 +41,43 @@ public class PlayerController : MonoBehaviour
         horizontalMovement = Input.GetAxis("Horizontal");
         verticalMovement = Input.GetAxis("Vertical");
 
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (Input.GetButtonDown("Jump"))
         {
-            Debug.Log(jumpHeight * 2f * gravity);
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            if (isGrounded)
+            {
+                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            }
+            
+            if (!doubleJump && !isGrounded)
+            {
+                doubleJump = true;
+                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            }
         }
 
         MovePlayer();
         Gravity();
 
+        // Freeza Command
         if (Input.GetKeyDown("e"))
         {
             Transform box = ReturnCloser();
-            Renderer render = box.GetComponent<Renderer>();
-            render.material.color = Color.black;
+            Freezable freezePower = box.GetComponent<Freezable>();
+            Rigidbody rb = box.GetComponent<Rigidbody>();
+
+            if (powerUsed)
+            {
+                freezePower.freeze = true;
+                rb.constraints = RigidbodyConstraints.FreezeAll;
+            }
+            else
+            {
+                freezePower.freeze = false;
+                rb.constraints = RigidbodyConstraints.None;
+            }
+
+            // Renderer render = box.GetComponent<Renderer>();
+            // render.material.color = Color.black;
         }
     }
 
@@ -105,6 +130,7 @@ public class PlayerController : MonoBehaviour
         if (isGrounded && velocity.y < 0)
         {
             velocity.y = -2f;
+            doubleJump = false;
         }
     }
 
