@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     public float playerSpeed = 12f;
     public float jumpHeight = 3f;
     bool doubleJump = false;
+    bool enableFreeze = false;
 
     /* Gravity */
     public float gravity = -9.81f;
@@ -45,40 +46,39 @@ public class PlayerController : MonoBehaviour
         {
             if (isGrounded)
             {
-                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                Jump();
             }
-            
-            if (!doubleJump && !isGrounded)
+            else if (!doubleJump)
             {
                 doubleJump = true;
-                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                Jump();
             }
         }
 
         MovePlayer();
         Gravity();
 
-        // Freeza Command
+        // Freeze Command
         if (Input.GetKeyDown("e"))
         {
             Transform box = ReturnCloser();
-            Freezable freezePower = box.GetComponent<Freezable>();
-            Rigidbody rb = box.GetComponent<Rigidbody>();
+            Renderer render = box.GetComponent<Renderer>();
+            Freezable obj = box.GetComponent<Freezable>();
 
             if (powerUsed)
             {
-                freezePower.freeze = true;
-                rb.constraints = RigidbodyConstraints.FreezeAll;
-            }
-            else
-            {
-                freezePower.freeze = false;
-                rb.constraints = RigidbodyConstraints.None;
+                obj.FreezeHandler += Freeze;
             }
 
-            // Renderer render = box.GetComponent<Renderer>();
-            // render.material.color = Color.black;
+            render.material.color = Color.black;
         }
+    }
+    private void Freeze(Rigidbody rb)
+    {
+        Debug.Log("Enable");
+        // freezeSave = rb.velocity;
+        rb.constraints = RigidbodyConstraints.FreezeAll;
+        rb.velocity = Vector3.zero;
     }
 
     private Transform ReturnCloser()
@@ -105,25 +105,6 @@ public class PlayerController : MonoBehaviour
         return tMin;
     }
 
-    /**
-    Transform GetClosestEnemy(Transform[] enemies)
-    {
-        Transform tMin = null;
-        float minDist = Mathf.Infinity;
-        Vector3 currentPos = transform.position;
-        foreach (Transform t in enemies)
-        {
-            float dist = Vector3.Distance(t.position, currentPos);
-            if (dist < minDist)
-            {
-                tMin = t;
-                minDist = dist;
-            }
-        }
-        return tMin;
-    }
-    */
-
     private void GroundCheck()
     {
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
@@ -145,5 +126,10 @@ public class PlayerController : MonoBehaviour
         Vector3 move = transform.right * horizontalMovement + transform.forward * verticalMovement;
 
         controller.Move(move * playerSpeed * Time.deltaTime);
+    }
+
+    private void Jump()
+    {
+        velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
     }
 }
