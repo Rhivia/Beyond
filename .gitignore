@@ -10,6 +10,14 @@
 /[Ll]ogs/
 /[Mm]emoryCaptures/
 
+# Asset Packages used
+# Unity Particle effects standard package
+/[Aa]ssets/EffectExamples/
+# Japanese Lights
+/[Aa]ssets/GamerSquid/
+# TMI - Dungeon - Voxel Assets for dungeon
+/[Aa]ssets/TMI - Dungeon/
+
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
 
