@@ -7,13 +7,14 @@ public class PlayerController : MonoBehaviour
 {
     /* Player */
     private CharacterController controller;
+    public static event FreezableHandler ObjectFreezed;
 
     /* Movement */
     private float horizontalMovement, verticalMovement;
     public float playerSpeed = 12f;
     public float jumpHeight = 3f;
     bool doubleJump = false;
-    bool enableFreeze = false;
+    bool enableFreeze = true;
 
     /* Gravity */
     public float gravity = -9.81f;
@@ -25,8 +26,9 @@ public class PlayerController : MonoBehaviour
 
     /* Freezable */
     private Collider[] freezables;
+    float minDist = Mathf.Infinity;
     public LayerMask freezeMask;
-    public float freezeRange = 50f;
+    public float freezeRange = 100f;
     bool powerUsed = false;
 
     private void Start()
@@ -61,44 +63,40 @@ public class PlayerController : MonoBehaviour
         // Freeze Command
         if (Input.GetKeyDown("e"))
         {
-            Transform box = ReturnCloser();
-            Renderer render = box.GetComponent<Renderer>();
-            Freezable obj = box.GetComponent<Freezable>();
-
-            if (powerUsed)
-            {
-                obj.FreezeHandler += Freeze;
-            }
-
-            render.material.color = Color.black;
+            enableFreeze = Freeze(ReturnCloser());
         }
     }
-    private void Freeze(Rigidbody rb)
-    {
-        Debug.Log("Enable");
-        // freezeSave = rb.velocity;
-        rb.constraints = RigidbodyConstraints.FreezeAll;
-        rb.velocity = Vector3.zero;
-    }
 
-    private Transform ReturnCloser()
+    private bool Freeze(GameObject box)
+    {
+        PlatformController controller = box.GetComponent<PlatformController>();
+
+        if (box && enableFreeze)
+        {
+            controller.movementEnabled = false;
+            return false;
+        }
+
+        controller.movementEnabled = true;
+        return true;
+    }
+    
+    private GameObject ReturnCloser()
     {
         freezables = Physics.OverlapSphere(transform.position, freezeRange, freezeMask);
 
-        Transform tMin = null;
+        GameObject tMin = null;
 
-        float minDist = Mathf.Infinity;
-        // Vector3 currentPos = transform.position;
-
-        foreach (Collider freezable in freezables)
+        if (freezables.Length > 0)
         {
-            Renderer render = freezable.GetComponent<Renderer>();
-
-            float dist = Vector3.Distance(transform.position, render.transform.position);
-            if (dist < minDist)
+            foreach (Collider freezable in freezables)
             {
-                tMin = render.transform;
-                minDist = dist;
+                float dist = Vector3.Distance(transform.position, freezable.transform.position);
+                if (dist < minDist)
+                {
+                    tMin = freezable.gameObject;
+                    minDist = dist;
+                }
             }
         }
 

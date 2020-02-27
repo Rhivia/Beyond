@@ -11,20 +11,15 @@ public class Freezable : MonoBehaviour
     public bool isFrozen = false;
     public bool freeze;
 
-    public event FreezableHandler FreezeHandler;
 
     void Start()
     {
+        PlayerController.ObjectFreezed += Freeze;
         rb = gameObject.GetComponent<Rigidbody>();
     }
 
     void Update()
     {
-        if (FreezeHandler != null)
-        {
-            FreezeHandler(rb);
-        }
-
         if (freeze && !isFrozen)
         {
             isFrozen = true;
@@ -42,6 +37,14 @@ public class Freezable : MonoBehaviour
             // FindObjectOfType<AudioManager>().Play("SomCongela");
             // gameObject.GetComponent<PlatformController>().enabled = true;
         }
+    }
+
+    private void Freeze(Rigidbody rb)
+    {
+        Debug.Log("Enable");
+        // freezeSave = rb.velocity;
+        rb.constraints = RigidbodyConstraints.FreezeAll;
+        rb.velocity = Vector3.zero;
     }
 
     private void Unfreeze()

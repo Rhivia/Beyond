@@ -12,38 +12,38 @@ public class PlatformController : MonoBehaviour
     };
 
     [SerializeField] PlatformMovement platformMovement;
-    // [SerializeField] AudioSource audio;
-
-    // public GameObject Player;
-    // public GameObject respawn;
+    public bool movementEnabled = true;
     public float speed = 15;
 
     Vector3 scaleVector = new Vector3(1, 1, 1);
     private int direction = 1;
-    Rigidbody rb;
+    // Rigidbody rb;
 
-    private void Start()
+
+    /*private void Start()
     {
         rb = GetComponent<Rigidbody>();
-        // audio = GetComponent<AudioSource>();
-    }
+    }*/
 
     private void FixedUpdate()
     {
-        switch (platformMovement)
+        if (movementEnabled)
         {
-            case PlatformMovement.up:
-                transform.Translate(Vector3.up * speed * direction * Time.deltaTime);
-                break;
-            case PlatformMovement.forward:
-                transform.Translate(Vector3.forward * speed * direction * Time.deltaTime);
-                break;
-            case PlatformMovement.down:
-                transform.Translate(Vector3.down * speed * direction * Time.deltaTime);
-                break;
-            default:
-                break;
-        };
+            switch (platformMovement)
+            {
+                case PlatformMovement.up:
+                    transform.Translate(Vector3.up * speed * direction * Time.deltaTime);
+                    break;
+                case PlatformMovement.forward:
+                    transform.Translate(Vector3.forward * speed * direction * Time.deltaTime);
+                    break;
+                case PlatformMovement.down:
+                    transform.Translate(Vector3.down * speed * direction * Time.deltaTime);
+                    break;
+                default:
+                    break;
+            };
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -59,14 +59,6 @@ public class PlatformController : MonoBehaviour
             // troca de direção aqui
             // audio.Play();
         }
-
-        /*
-        if (other.gameObject.CompareTag("Respawna"))
-        {
-            transform.position = respawn.transform.position;
-            rb.velocity = Vector3.zero;
-        }
-        */
     }
 
     private void OnTriggerExit(Collider other)
