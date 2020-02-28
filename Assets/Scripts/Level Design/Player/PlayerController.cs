@@ -14,11 +14,10 @@ public class PlayerController : MonoBehaviour
     public float playerSpeed = 12f;
     public float jumpHeight = 3f;
     bool doubleJump = false;
-    bool enableFreeze = true;
 
     /* Gravity */
     public float gravity = -9.81f;
-    public float groundDistance = 0.4f;
+    public float groundDistance = 0.2f;
     public Transform groundCheck;
     public LayerMask groundMask;
     Vector3 velocity;
@@ -29,7 +28,6 @@ public class PlayerController : MonoBehaviour
     float minDist = Mathf.Infinity;
     public LayerMask freezeMask;
     public float freezeRange = 100f;
-    bool powerUsed = false;
 
     private void Start()
     {
@@ -63,28 +61,30 @@ public class PlayerController : MonoBehaviour
         // Freeze Command
         if (Input.GetKeyDown("e"))
         {
-            enableFreeze = Freeze(ReturnCloser());
+            Freeze(ReturnCloser());
         }
     }
 
-    private bool Freeze(GameObject box)
+    private void Freeze(GameObject box)
     {
-        PlatformController controller = box.GetComponent<PlatformController>();
-
-        if (box && enableFreeze)
+        if (box)
         {
-            controller.movementEnabled = false;
-            return false;
-        }
+            FreezableObject controller = box.GetComponent<FreezableObject>();
 
-        controller.movementEnabled = true;
-        return true;
+            if (controller.movementEnabled)
+            {
+                controller.movementEnabled = false;
+            }
+            else if (!controller.movementEnabled)
+            {
+                controller.movementEnabled = true;
+            }
+        }
     }
     
     private GameObject ReturnCloser()
     {
         freezables = Physics.OverlapSphere(transform.position, freezeRange, freezeMask);
-
         GameObject tMin = null;
 
         if (freezables.Length > 0)
@@ -105,10 +105,10 @@ public class PlayerController : MonoBehaviour
 
     private void GroundCheck()
     {
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance);
         if (isGrounded && velocity.y < 0)
         {
-            velocity.y = -2f;
+            velocity.y = -5f;
             doubleJump = false;
         }
     }

@@ -11,7 +11,6 @@ public class Freezable : MonoBehaviour
     public bool isFrozen = false;
     public bool freeze;
 
-
     void Start()
     {
         PlayerController.ObjectFreezed += Freeze;
